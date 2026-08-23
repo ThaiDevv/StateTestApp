@@ -1,7 +1,20 @@
 package com.nhom.statetestapp.screens
 
 import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nhom.statetestapp.viewmodel.SavedStateViewModel
@@ -9,66 +22,176 @@ import com.nhom.statetestapp.viewmodel.SavedStateViewModel
 /**
  * ============================================================
  * SavedStateScreen – Demo cơ chế `SavedStateHandle`
- *
- * 👤 PHỤ TRÁCH: THÀNH VIÊN 4 (TV4)
+ * 👤 THÀNH VIÊN 4 (TV4)
  * ============================================================
+ * SavedStateHandle = ViewModel + tự động backup vào Bundle của OS.
  *
- * NHIỆM VỤ CỦA TV4:
- * 1. Implement toàn bộ UI bên dưới (phần TODO)
- * 2. ViewModel đã được tạo sẵn tại: viewmodel/SavedStateViewModel.kt
- *    → TV4 chỉ cần IMPLEMENT, không cần tạo mới
- * 3. Collect StateFlow từ ViewModel dùng collectAsStateWithLifecycle()
- * 4. Hiển thị VM hashCode trên UI
- * 5. Thực hiện và chụp ảnh 5 test cases
+ * Survive: recomposition, xoay màn hình, tạo lại Activity, kill process.
+ * Không survive: navigate Back (NavBackStackEntry bị pop).
  *
- * HƯỚNG DẪN SỬ DỤNG:
- *   val vm: SavedStateViewModel = viewModel()
- *   val name  by vm.name.collectAsStateWithLifecycle()
- *   val count by vm.count.collectAsStateWithLifecycle()
- *   val choice by vm.choice.collectAsStateWithLifecycle()
- *   // Ghi: vm.updateName(), vm.incrementCount(), vm.toggleChoice()
- *
- * ⭐ TEST CASE QUAN TRỌNG NHẤT:
- *   Test Case #20: Kill process → state vẫn CÒN
- *   Đây là điểm khác biệt lớn nhất với ViewModel thuần!
- *   Phải giải thích rõ trong báo cáo.
- *
- * XEM CHI TIẾT TẠI: implementation_plan.md – Mục 7
+ * Điểm khác biệt với ViewModel thuần:
+ *   - Sau kill process: VM Hash KHÁC nhưng data VẪN CÒN!
+ *   - Log "Restored values" trong init sẽ chứng minh điều này.
  * ============================================================
  */
-
 private const val TAG = "STATE_TEST"
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SavedStateScreen(vm: SavedStateViewModel = viewModel()) {
 
-    // =========================================================
-    // TODO (TV4): Collect StateFlow thành State ở đây
-    // =========================================================
-    // val name   by vm.name.collectAsStateWithLifecycle()
-    // val count  by vm.count.collectAsStateWithLifecycle()
-    // val choice by vm.choice.collectAsStateWithLifecycle()
-    //
-    // Log.d(TAG, "[SavedStateHandle] Recomposition - name='$name', count=$count, " +
-    //            "choice=$choice, vmHash=${vm.hashCode()}")
+    // Collect StateFlow → State (tự cập nhật UI khi data thay đổi)
+    val name   by vm.name.collectAsStateWithLifecycle()
+    val count  by vm.count.collectAsStateWithLifecycle()
+    val choice by vm.choice.collectAsStateWithLifecycle()
 
-    // =========================================================
-    // TODO (TV4): Implement UI
-    // UI giống ViewModelScreen nhưng:
-    //   - Label: "🔴 Cơ chế: SavedStateHandle"
-    //   - Màu chủ đạo: Color(0xFFE91E63) – Hồng/Đỏ
-    //   - Màu card label: Color(0xFFFCE4EC) – Hồng nhạt
-    //   - Dùng name, count, choice từ collectAsStateWithLifecycle()
-    //   - Gọi: vm.updateName(), vm.incrementCount(), vm.toggleChoice()
-    //
-    // Tham khảo code mẫu đầy đủ trong: implementation_plan.md – Mục 7.2
-    // =========================================================
+    Log.d(TAG, "[SavedStateHandle] ♻️ Recomposition → name='$name', count=$count, " +
+               "choice=$choice, vmHash=#${vm.hashCode()}")
 
-    // Placeholder (xoá khi TV4 implement xong)
-    PlaceholderScreen(
-        emoji = "🔴",
-        mechanismName = "SavedStateHandle",
-        assignee = "TV4",
-        color = androidx.compose.ui.graphics.Color(0xFFE91E63)
-    )
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        "🔴 SavedStateHandle",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFC62828),
+                    titleContentColor = Color.White
+                )
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFFFF0F0))
+                .padding(padding)
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+
+            MechanismBadge(
+                label = "Cơ chế: SavedStateHandle",
+                description = "ViewModel + tự động backup vào Bundle của OS. Survive cả kill process! " +
+                              "Mất chỉ khi navigate Back (NavBackStackEntry bị pop).",
+                color = Color(0xFFC62828)
+            )
+
+            // ── VM Instance ID ──
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFCE4EC)),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text("🔑", fontSize = 20.sp)
+                    Column {
+                        Text(
+                            "ViewModel Instance ID",
+                            fontSize = 12.sp,
+                            color = Color(0xFF880E4F),
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            "#${vm.hashCode()}",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color(0xFFC62828),
+                            fontFamily = FontFamily.Monospace
+                        )
+                        Text(
+                            "⭐ Sau kill process: ID THAY ĐỔI nhưng data VẪN CÒN!",
+                            fontSize = 11.sp,
+                            color = Color(0xFFC62828)
+                        )
+                    }
+                }
+            }
+
+            StateCard(title = "📝 Ô nhập tên / ghi chú") {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { vm.updateName(it) },
+                    label = { Text("Nhập tên hoặc ghi chú") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFFC62828),
+                        focusedLabelColor  = Color(0xFFC62828)
+                    )
+                )
+            }
+
+            StateCard(title = "🔢 Bộ đếm số lần bấm") {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Button(
+                        onClick = { vm.incrementCount() },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828)),
+                        shape = RoundedCornerShape(10.dp)
+                    ) { Text("＋ Bấm +1", fontSize = 16.sp) }
+
+                    Button(
+                        onClick = { vm.resetCount() },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF78909C)),
+                        shape = RoundedCornerShape(10.dp)
+                    ) { Text("Reset") }
+
+                    Text(
+                        text = "$count",
+                        fontSize = 36.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color(0xFFC62828)
+                    )
+                }
+            }
+
+            StateCard(title = "🔘 Lựa chọn On/Off") {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Switch(
+                        checked = choice,
+                        onCheckedChange = { vm.toggleChoice() },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = Color(0xFFC62828)
+                        )
+                    )
+                    Text(
+                        text = if (choice) "BẬT ✅" else "TẮT ❌",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = if (choice) Color(0xFFC62828) else Color(0xFF9E9E9E)
+                    )
+                }
+            }
+
+            StateResultCard(
+                name   = name,
+                count  = count,
+                choice = choice,
+                color  = Color(0xFFC62828),
+                extra  = "VM Instance: #${vm.hashCode()}"
+            )
+
+            InfoNote(
+                text = "⭐ ĐIỂM QUAN TRỌNG: Kill process (adb shell am kill ...) → " +
+                       "VM Hash THAY ĐỔI nhưng data VẪN CÒN!\n" +
+                       "Xem Logcat: 'Restored values → name=...' để chứng minh."
+            )
+        }
+    }
 }

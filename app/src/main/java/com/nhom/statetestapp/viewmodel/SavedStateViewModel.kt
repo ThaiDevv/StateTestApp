@@ -8,22 +8,16 @@ import kotlinx.coroutines.flow.StateFlow
 /**
  * ============================================================
  * SavedStateViewModel – ViewModel dùng SavedStateHandle
- *
  * 👤 PHỤ TRÁCH: THÀNH VIÊN 4 (TV4)
  * ============================================================
+ * Log "Restored values" trong init là BẰNG CHỨNG quan trọng:
+ *   - Giá trị = default ("", 0, false) → lần đầu mở
+ *   - Giá trị = data cũ → được restore sau kill process!
  *
- * File này đã có khung cơ bản. TV4 cần:
- * 1. KHÔNG xoá bất kỳ Log nào đã có
- * 2. Kiểm tra file này hoạt động đúng với SavedStateScreen.kt
- *
- * ⭐ ĐIỂM ĐẶC BIỆT CẦN CHÚ Ý:
- * Trong init block, log "Restored values" sẽ cho thấy:
- * - Nếu đây là lần KHỞI ĐỘNG MỚI → các giá trị = "" / 0 / false
- * - Nếu app được PHỤC HỒI sau process death → các giá trị = dữ liệu cũ
- * → Đây là BẰNG CHỨNG SavedStateHandle survive process death!
- *
- * Log "ViewModel CREATED" kết hợp với hashCode() sẽ chứng minh
- * đây là instance mới (sau process death), nhưng data được restore.
+ * Kết hợp với VM Hashcode:
+ *   - Cùng hash + data cũ  → survive config change
+ *   - Hash MỚI + data cũ  → VM mới nhưng SSH restore từ Bundle
+ *   - Hash MỚI + data mặc định → VM mới, không restore được
  * ============================================================
  */
 private const val TAG = "STATE_TEST"
@@ -36,14 +30,13 @@ class SavedStateViewModel(private val savedStateHandle: SavedStateHandle) : View
         private const val KEY_CHOICE = "ssh_choice"
     }
 
-    // StateFlow tự động cập nhật UI khi data thay đổi
-    val name:   StateFlow<String>  = savedStateHandle.getStateFlow(KEY_NAME, "")
-    val count:  StateFlow<Int>     = savedStateHandle.getStateFlow(KEY_COUNT, 0)
-    val choice: StateFlow<Boolean> = savedStateHandle.getStateFlow(KEY_CHOICE, false)
+    val name:   StateFlow<String>  = savedStateHandle.getStateFlow(KEY_NAME,   "")
+    val count:  StateFlow<Int>     = savedStateHandle.getStateFlow(KEY_COUNT,   0)
+    val choice: StateFlow<Boolean> = savedStateHandle.getStateFlow(KEY_CHOICE,  false)
 
     init {
         Log.d(TAG, "[SavedStateHandle] ✅ ViewModel CREATED - instance: #${hashCode()}")
-        // Log này quan trọng: nếu có dữ liệu ở đây sau process death → SSH hoạt động!
+        // *** BẰNG CHỨNG KEY: Nếu có data ở đây sau kill process → SSH hoạt động! ***
         Log.d(TAG, "[SavedStateHandle] 📦 Restored values → " +
                 "name='${name.value}', count=${count.value}, choice=${choice.value}")
     }
@@ -54,15 +47,18 @@ class SavedStateViewModel(private val savedStateHandle: SavedStateHandle) : View
     }
 
     fun incrementCount() {
-        val newCount = count.value + 1
-        savedStateHandle[KEY_COUNT] = newCount
-        Log.d(TAG, "[SavedStateHandle] saveCount → $newCount (vmHash=#${hashCode()})")
+        savedStateHandle[KEY_COUNT] = count.value + 1
+        Log.d(TAG, "[SavedStateHandle] saveCount → ${count.value} (vmHash=#${hashCode()})")
+    }
+
+    fun resetCount() {
+        savedStateHandle[KEY_COUNT] = 0
+        Log.d(TAG, "[SavedStateHandle] resetCount → 0 (vmHash=#${hashCode()})")
     }
 
     fun toggleChoice() {
-        val newChoice = !choice.value
-        savedStateHandle[KEY_CHOICE] = newChoice
-        Log.d(TAG, "[SavedStateHandle] saveChoice → $newChoice (vmHash=#${hashCode()})")
+        savedStateHandle[KEY_CHOICE] = !choice.value
+        Log.d(TAG, "[SavedStateHandle] saveChoice → ${choice.value} (vmHash=#${hashCode()})")
     }
 
     override fun onCleared() {

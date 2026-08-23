@@ -1,69 +1,190 @@
 package com.nhom.statetestapp.screens
 
 import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nhom.statetestapp.viewmodel.CounterViewModel
 
 /**
  * ============================================================
  * ViewModelScreen – Demo cơ chế `ViewModel`
- *
- * 👤 PHỤ TRÁCH: THÀNH VIÊN 3 (TV3)
+ * 👤 THÀNH VIÊN 3 (TV3)
  * ============================================================
+ * ViewModel lưu state trong RAM, gắn với ViewModelStoreOwner.
  *
- * NHIỆM VỤ CỦA TV3:
- * 1. Implement toàn bộ UI bên dưới (phần TODO)
- * 2. ViewModel đã được tạo sẵn tại: viewmodel/CounterViewModel.kt
- *    → TV3 chỉ cần IMPLEMENT, không cần tạo mới
- * 3. Thêm Logcat logging với TAG = "STATE_TEST"
- * 4. Hiển thị VM hashCode trên UI để chứng minh same/different instance
- * 5. Thực hiện và chụp ảnh 5 test cases
+ * Survive: recomposition, xoay màn hình, tạo lại Activity.
+ * Không survive: navigate Back (NavBackStackEntry bị pop → onCleared()),
+ *                kill process (RAM bị giải phóng).
  *
- * HƯỚNG DẪN SỬ DỤNG VIEWMODEL:
- *   val vm: CounterViewModel = viewModel()
- *   // Đọc state: vm.name, vm.count, vm.choice
- *   // Ghi state: vm.updateName("..."), vm.incrementCount(), vm.toggleChoice()
- *
- * ⚠️ LƯU Ý QUAN TRỌNG:
- *   Khi navigate đi rồi quay lại, phải test CẢ HAI tình huống:
- *   - Bấm Back (popBackStack) → ViewModel bị huỷ (log CLEARED)
- *   - Navigate giữ entry → ViewModel còn (hashCode giống nhau)
- *   Và phải giải thích sự khác biệt!
- *
- * XEM CHI TIẾT TẠI: implementation_plan.md – Mục 6
+ * Bằng chứng: Hiển thị VM Hashcode trên UI để so sánh
+ *             cùng instance hay instance mới sau các thao tác.
  * ============================================================
  */
-
 private const val TAG = "STATE_TEST"
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ViewModelScreen(vm: CounterViewModel = viewModel()) {
 
-    // =========================================================
-    // TODO (TV3): Thêm Log ở đây
-    // =========================================================
-    // Log.d(TAG, "[ViewModel] Recomposition - name='${vm.name}', count=${vm.count}, " +
-    //            "choice=${vm.choice}, vmHash=${vm.hashCode()}")
+    Log.d(TAG, "[ViewModel] ♻️ Recomposition → name='${vm.name}', count=${vm.count}, " +
+               "choice=${vm.choice}, vmHash=#${vm.hashCode()}")
 
-    // =========================================================
-    // TODO (TV3): Implement UI
-    // UI giống RememberScreen nhưng:
-    //   - Label: "🟠 Cơ chế: ViewModel"
-    //   - Hiển thị thêm: "VM instance: #${vm.hashCode()}" (dưới label)
-    //   - Màu chủ đạo: Color(0xFFFF9800) – Cam
-    //   - Màu card label: Color(0xFFFFF3E0) – Cam nhạt
-    //   - Dùng: vm.name, vm.count, vm.choice (đọc trực tiếp)
-    //   - Gọi: vm.updateName(), vm.incrementCount(), vm.toggleChoice()
-    //
-    // Tham khảo code mẫu đầy đủ trong: implementation_plan.md – Mục 6.2
-    // =========================================================
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        "🟠 ViewModel",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFE65100),
+                    titleContentColor = Color.White
+                )
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFFFF8F0))
+                .padding(padding)
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
 
-    // Placeholder (xoá khi TV3 implement xong)
-    PlaceholderScreen(
-        emoji = "🟠",
-        mechanismName = "ViewModel",
-        assignee = "TV3",
-        color = androidx.compose.ui.graphics.Color(0xFFFF9800)
-    )
+            MechanismBadge(
+                label = "Cơ chế: ViewModel",
+                description = "Lưu trong RAM độc lập với Composition. Survive xoay màn hình. " +
+                              "Mất khi navigate Back (ViewModel.onCleared) hoặc kill process.",
+                color = Color(0xFFE65100)
+            )
+
+            // ── Hiển thị VM Instance ID – bằng chứng cốt lõi ──
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF3E0)),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text("🔑", fontSize = 20.sp)
+                    Column {
+                        Text(
+                            "ViewModel Instance ID",
+                            fontSize = 12.sp,
+                            color = Color(0xFF795548),
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            "#${vm.hashCode()}",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color(0xFFE65100),
+                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                        )
+                        Text(
+                            "Nếu ID thay đổi → ViewModel đã bị huỷ và tạo mới",
+                            fontSize = 11.sp,
+                            color = Color(0xFF9E9E9E)
+                        )
+                    }
+                }
+            }
+
+            StateCard(title = "📝 Ô nhập tên / ghi chú") {
+                OutlinedTextField(
+                    value = vm.name,
+                    onValueChange = { vm.updateName(it) },
+                    label = { Text("Nhập tên hoặc ghi chú") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFFE65100),
+                        focusedLabelColor  = Color(0xFFE65100)
+                    )
+                )
+            }
+
+            StateCard(title = "🔢 Bộ đếm số lần bấm") {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Button(
+                        onClick = { vm.incrementCount() },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE65100)),
+                        shape = RoundedCornerShape(10.dp)
+                    ) { Text("＋ Bấm +1", fontSize = 16.sp) }
+
+                    Button(
+                        onClick = { vm.resetCount() },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF78909C)),
+                        shape = RoundedCornerShape(10.dp)
+                    ) { Text("Reset") }
+
+                    Text(
+                        text = "${vm.count}",
+                        fontSize = 36.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color(0xFFE65100)
+                    )
+                }
+            }
+
+            StateCard(title = "🔘 Lựa chọn On/Off") {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Switch(
+                        checked = vm.choice,
+                        onCheckedChange = { vm.toggleChoice() },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = Color(0xFFE65100)
+                        )
+                    )
+                    Text(
+                        text = if (vm.choice) "BẬT ✅" else "TẮT ❌",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = if (vm.choice) Color(0xFFE65100) else Color(0xFF9E9E9E)
+                    )
+                }
+            }
+
+            StateResultCard(
+                name   = vm.name,
+                count  = vm.count,
+                choice = vm.choice,
+                color  = Color(0xFFE65100),
+                extra  = "VM Instance: #${vm.hashCode()}"
+            )
+
+            InfoNote(
+                text = "✅ Xoay màn hình → ID giữ nguyên, state CÒN.\n" +
+                       "❌ Bấm Back rồi vào lại → ID THAY ĐỔI, state MẤT (ViewModel.onCleared() được gọi).\n" +
+                       "❌ Kill process → ID THAY ĐỔI, state MẤT (RAM bị giải phóng)."
+            )
+        }
+    }
 }
