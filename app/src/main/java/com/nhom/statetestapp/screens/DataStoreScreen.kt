@@ -1,4 +1,4 @@
-8package com.nhom.statetestapp.screens
+package com.nhom.statetestapp.screens
 
 import android.util.Log
 import androidx.compose.foundation.background
