@@ -1,20 +1,7 @@
-==============================================
-NHÓM: [Tên nhóm - điền vào đây]
-MÔN:  [Tên môn học - điền vào đây]
-GVHD: [Tên giảng viên - điền vào đây]
-==============================================
 DANH SÁCH THÀNH VIÊN:
-1. [Họ và tên đầy đủ] - [MSSV]
-2. [Họ và tên đầy đủ] - [MSSV]
-3. [Họ và tên đầy đủ] - [MSSV]
-4. [Họ và tên đầy đủ] - [MSSV]
-5. [Họ và tên đầy đủ] - [MSSV]
-==============================================
-HƯỚNG DẪN SỬ DỤNG:
-- Mở file này bằng Notepad hoặc Wordpad
-- Đặt cửa sổ Notepad ở GÓC TRÊN BÊN PHẢI màn hình
-- Đảm bảo chữ đủ to để nhìn rõ khi chụp ảnh
-- KHÔNG che code / AVD / Logcat khi đặt cửa sổ
-- Chụp ảnh FULL màn hình (PrtSc hoặc Win+Shift+S)
-- KHÔNG edit/chèn chữ ký vào ảnh sau khi đã chụp
-==============================================
+1. [Trần Văn Ngọc Thắng] - [046206001641]
+2. [Trần Văn Thái] - [051206002315]
+3. [Nguyễn Lê Huy Tâm] - [056206011188]
+4. [Huỳnh Đình Chấn] - [077206002307]
+5. [Nguyễn Ngọc Gia Bảo] - [079206008279]
+

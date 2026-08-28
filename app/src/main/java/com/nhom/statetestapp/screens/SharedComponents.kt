@@ -97,7 +97,7 @@ fun StateResultCard(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "📊 STATE HIỆN TẠI",
+                text = "STATE HIỆN TẠI",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = color,
@@ -107,7 +107,7 @@ fun StateResultCard(
 
             ResultRow(label = "Tên",        value = if (name.isEmpty()) "(trống)" else "\"$name\"", color = color)
             ResultRow(label = "Bộ đếm",     value = "$count lần",                                    color = color)
-            ResultRow(label = "Lựa chọn",   value = if (choice) "BẬT ✅" else "TẮT ❌",              color = color)
+            ResultRow(label = "Lựa chọn",   value = if (choice) "Bật" else "Tắt",                    color = color)
 
             if (extra != null) {
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = Color(0xFF424242))
@@ -149,17 +149,12 @@ fun InfoNote(text: String) {
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF8E1))
     ) {
-        Row(
+        Text(
+            text = text,
             modifier = Modifier.padding(14.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text("💡", fontSize = 18.sp)
-            Text(
-                text = text,
-                fontSize = 12.sp,
-                color = Color(0xFF5D4037),
-                lineHeight = 18.sp
-            )
-        }
+            fontSize = 12.sp,
+            color = Color(0xFF5D4037),
+            lineHeight = 18.sp
+        )
     }
 }

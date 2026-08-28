@@ -35,34 +35,34 @@ class SavedStateViewModel(private val savedStateHandle: SavedStateHandle) : View
     val choice: StateFlow<Boolean> = savedStateHandle.getStateFlow(KEY_CHOICE,  false)
 
     init {
-        Log.d(TAG, "[SavedStateHandle] ✅ ViewModel CREATED - instance: #${hashCode()}")
+        Log.d(TAG, "[SavedStateHandle] ViewModel created: instance=#${hashCode()}")
         // *** BẰNG CHỨNG KEY: Nếu có data ở đây sau kill process → SSH hoạt động! ***
-        Log.d(TAG, "[SavedStateHandle] 📦 Restored values → " +
+        Log.d(TAG, "[SavedStateHandle] Restored values: " +
                 "name='${name.value}', count=${count.value}, choice=${choice.value}")
     }
 
     fun updateName(newName: String) {
         savedStateHandle[KEY_NAME] = newName
-        Log.d(TAG, "[SavedStateHandle] saveName → '$newName' (vmHash=#${hashCode()})")
+        Log.d(TAG, "[SavedStateHandle] Name changed: '$newName', instance=#${hashCode()}")
     }
 
     fun incrementCount() {
         savedStateHandle[KEY_COUNT] = count.value + 1
-        Log.d(TAG, "[SavedStateHandle] saveCount → ${count.value} (vmHash=#${hashCode()})")
+        Log.d(TAG, "[SavedStateHandle] Count changed: ${count.value}, instance=#${hashCode()}")
     }
 
     fun resetCount() {
         savedStateHandle[KEY_COUNT] = 0
-        Log.d(TAG, "[SavedStateHandle] resetCount → 0 (vmHash=#${hashCode()})")
+        Log.d(TAG, "[SavedStateHandle] Count reset: 0, instance=#${hashCode()}")
     }
 
     fun toggleChoice() {
         savedStateHandle[KEY_CHOICE] = !choice.value
-        Log.d(TAG, "[SavedStateHandle] saveChoice → ${choice.value} (vmHash=#${hashCode()})")
+        Log.d(TAG, "[SavedStateHandle] Choice changed: ${choice.value}, instance=#${hashCode()}")
     }
 
     override fun onCleared() {
         super.onCleared()
-        Log.d(TAG, "[SavedStateHandle] ❌ ViewModel CLEARED - instance: #${hashCode()}")
+        Log.d(TAG, "[SavedStateHandle] ViewModel cleared: instance=#${hashCode()}")
     }
 }

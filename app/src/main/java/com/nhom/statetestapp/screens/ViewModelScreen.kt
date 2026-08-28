@@ -38,15 +38,15 @@ private const val TAG = "STATE_TEST"
 @Composable
 fun ViewModelScreen(vm: CounterViewModel = viewModel()) {
 
-    Log.d(TAG, "[ViewModel] ♻️ Recomposition → name='${vm.name}', count=${vm.count}, " +
-               "choice=${vm.choice}, vmHash=#${vm.hashCode()}")
+    Log.d(TAG, "[ViewModel] Recomposition: name='${vm.name}', count=${vm.count}, " +
+               "choice=${vm.choice}, instance=#${vm.hashCode()}")
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        "🟠 ViewModel",
+                        "ViewModel",
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp
                     )
@@ -70,8 +70,7 @@ fun ViewModelScreen(vm: CounterViewModel = viewModel()) {
 
             MechanismBadge(
                 label = "Cơ chế: ViewModel",
-                description = "Lưu trong RAM độc lập với Composition. Survive xoay màn hình. " +
-                              "Mất khi navigate Back (ViewModel.onCleared) hoặc kill process.",
+                description = "Dữ liệu được giữ trong ViewModel và không phụ thuộc vào Composition.",
                 color = Color(0xFFE65100)
             )
 
@@ -81,15 +80,9 @@ fun ViewModelScreen(vm: CounterViewModel = viewModel()) {
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF3E0)),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Row(
-                    modifier = Modifier.padding(14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text("🔑", fontSize = 20.sp)
-                    Column {
+                Column(modifier = Modifier.padding(14.dp)) {
                         Text(
-                            "ViewModel Instance ID",
+                            "Mã ViewModel",
                             fontSize = 12.sp,
                             color = Color(0xFF795548),
                             fontWeight = FontWeight.SemiBold
@@ -102,15 +95,14 @@ fun ViewModelScreen(vm: CounterViewModel = viewModel()) {
                             fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
                         )
                         Text(
-                            "Nếu ID thay đổi → ViewModel đã bị huỷ và tạo mới",
+                            "Mã thay đổi khi một ViewModel mới được tạo",
                             fontSize = 11.sp,
                             color = Color(0xFF9E9E9E)
                         )
-                    }
                 }
             }
 
-            StateCard(title = "📝 Ô nhập tên / ghi chú") {
+            StateCard(title = "Tên hoặc ghi chú") {
                 OutlinedTextField(
                     value = vm.name,
                     onValueChange = { vm.updateName(it) },
@@ -124,7 +116,7 @@ fun ViewModelScreen(vm: CounterViewModel = viewModel()) {
                 )
             }
 
-            StateCard(title = "🔢 Bộ đếm số lần bấm") {
+            StateCard(title = "Bộ đếm") {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -133,7 +125,7 @@ fun ViewModelScreen(vm: CounterViewModel = viewModel()) {
                         onClick = { vm.incrementCount() },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE65100)),
                         shape = RoundedCornerShape(10.dp)
-                    ) { Text("＋ Bấm +1", fontSize = 16.sp) }
+                    ) { Text("+1", fontSize = 16.sp) }
 
                     Button(
                         onClick = { vm.resetCount() },
@@ -150,7 +142,7 @@ fun ViewModelScreen(vm: CounterViewModel = viewModel()) {
                 }
             }
 
-            StateCard(title = "🔘 Lựa chọn On/Off") {
+            StateCard(title = "Lựa chọn") {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -164,7 +156,7 @@ fun ViewModelScreen(vm: CounterViewModel = viewModel()) {
                         )
                     )
                     Text(
-                        text = if (vm.choice) "BẬT ✅" else "TẮT ❌",
+                        text = if (vm.choice) "Bật" else "Tắt",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = if (vm.choice) Color(0xFFE65100) else Color(0xFF9E9E9E)
@@ -181,9 +173,7 @@ fun ViewModelScreen(vm: CounterViewModel = viewModel()) {
             )
 
             InfoNote(
-                text = "✅ Xoay màn hình → ID giữ nguyên, state CÒN.\n" +
-                       "❌ Bấm Back rồi vào lại → ID THAY ĐỔI, state MẤT (ViewModel.onCleared() được gọi).\n" +
-                       "❌ Kill process → ID THAY ĐỔI, state MẤT (RAM bị giải phóng)."
+                text = "So sánh mã ViewModel trước và sau khi xoay màn hình, bấm Back hoặc kill process."
             )
         }
     }

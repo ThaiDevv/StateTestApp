@@ -47,14 +47,14 @@ fun DataStoreScreen() {
     val count  by dsManager.countFlow.collectAsState(initial = 0)
     val choice by dsManager.choiceFlow.collectAsState(initial = false)
 
-    Log.d(TAG, "[DataStore] ♻️ Recomposition → name='$name', count=$count, choice=$choice")
+    Log.d(TAG, "[DataStore] Recomposition: name='$name', count=$count, choice=$choice")
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        "🟣 DataStore",
+                        "DataStore",
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp
                     )
@@ -78,8 +78,7 @@ fun DataStoreScreen() {
 
             MechanismBadge(
                 label = "Cơ chế: DataStore (Preferences)",
-                description = "Lưu vào FILE trên Internal Storage (Disk). Survive TẤT CẢ tình huống " +
-                              "kể cả navigate Back và kill process!",
+                description = "Dữ liệu được lưu bằng Preferences DataStore trên bộ nhớ trong.",
                 color = Color(0xFF4A148C)
             )
 
@@ -89,15 +88,9 @@ fun DataStoreScreen() {
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFEDE7F6)),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Row(
-                    modifier = Modifier.padding(14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Text("💾", fontSize = 28.sp)
-                    Column {
+                Column(modifier = Modifier.padding(14.dp)) {
                         Text(
-                            "Lưu trữ trên Disk",
+                            "Lưu trữ trên bộ nhớ trong",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF4A148C)
@@ -108,11 +101,10 @@ fun DataStoreScreen() {
                             color = Color(0xFF7B1FA2),
                             fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
                         )
-                    }
                 }
             }
 
-            StateCard(title = "📝 Ô nhập tên / ghi chú") {
+            StateCard(title = "Tên hoặc ghi chú") {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { newName ->
@@ -128,7 +120,7 @@ fun DataStoreScreen() {
                 )
             }
 
-            StateCard(title = "🔢 Bộ đếm số lần bấm") {
+            StateCard(title = "Bộ đếm") {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -137,7 +129,7 @@ fun DataStoreScreen() {
                         onClick = { scope.launch { dsManager.saveCount(count + 1) } },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A148C)),
                         shape = RoundedCornerShape(10.dp)
-                    ) { Text("＋ Bấm +1", fontSize = 16.sp) }
+                    ) { Text("+1", fontSize = 16.sp) }
 
                     Button(
                         onClick = { scope.launch { dsManager.saveCount(0) } },
@@ -154,7 +146,7 @@ fun DataStoreScreen() {
                 }
             }
 
-            StateCard(title = "🔘 Lựa chọn On/Off") {
+            StateCard(title = "Lựa chọn") {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -170,7 +162,7 @@ fun DataStoreScreen() {
                         )
                     )
                     Text(
-                        text = if (choice) "BẬT ✅" else "TẮT ❌",
+                        text = if (choice) "Bật" else "Tắt",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = if (choice) Color(0xFF4A148C) else Color(0xFF9E9E9E)
@@ -183,13 +175,12 @@ fun DataStoreScreen() {
                 count  = count,
                 choice = choice,
                 color  = Color(0xFF4A148C),
-                extra  = "💾 Dữ liệu đã được ghi xuống Disk"
+                extra  = "Dữ liệu được lưu trên bộ nhớ trong"
             )
 
             InfoNote(
-                text = "✅ Bấm Back rồi vào lại → State VẪN CÒN (Khác hoàn toàn 4 cơ chế trên!).\n" +
-                       "✅ Kill process → State VẪN CÒN.\n" +
-                       "Xem Logcat: '[DataStore] 📖 Read ... from disk' để chứng minh."
+                text = "Bấm Back, tạo lại Activity hoặc kill process rồi mở lại màn hình. " +
+                       "Dùng các dòng 'Read ... from disk' trong Logcat để đối chiếu."
             )
         }
     }

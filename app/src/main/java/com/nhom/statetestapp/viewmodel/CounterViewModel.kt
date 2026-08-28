@@ -32,31 +32,31 @@ class CounterViewModel : ViewModel() {
         private set
 
     init {
-        Log.d(TAG, "[ViewModel] ✅ ViewModel CREATED - instance: #${hashCode()}")
+        Log.d(TAG, "[ViewModel] Created: instance=#${hashCode()}")
     }
 
     fun updateName(newName: String) {
         name = newName
-        Log.d(TAG, "[ViewModel] updateName → '$newName' (vmHash=#${hashCode()})")
+        Log.d(TAG, "[ViewModel] Name changed: '$newName', instance=#${hashCode()}")
     }
 
     fun incrementCount() {
         count++
-        Log.d(TAG, "[ViewModel] incrementCount → $count (vmHash=#${hashCode()})")
+        Log.d(TAG, "[ViewModel] Count changed: $count, instance=#${hashCode()}")
     }
 
     fun resetCount() {
         count = 0
-        Log.d(TAG, "[ViewModel] resetCount → 0 (vmHash=#${hashCode()})")
+        Log.d(TAG, "[ViewModel] Count reset: 0, instance=#${hashCode()}")
     }
 
     fun toggleChoice() {
         choice = !choice
-        Log.d(TAG, "[ViewModel] toggleChoice → $choice (vmHash=#${hashCode()})")
+        Log.d(TAG, "[ViewModel] Choice changed: $choice, instance=#${hashCode()}")
     }
 
     override fun onCleared() {
         super.onCleared()
-        Log.d(TAG, "[ViewModel] ❌ ViewModel CLEARED/DESTROYED - instance: #${hashCode()}")
+        Log.d(TAG, "[ViewModel] Cleared: instance=#${hashCode()}")
     }
 }

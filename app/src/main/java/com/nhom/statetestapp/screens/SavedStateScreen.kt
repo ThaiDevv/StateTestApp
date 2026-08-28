@@ -45,15 +45,15 @@ fun SavedStateScreen(vm: SavedStateViewModel = viewModel()) {
     val count  by vm.count.collectAsStateWithLifecycle()
     val choice by vm.choice.collectAsStateWithLifecycle()
 
-    Log.d(TAG, "[SavedStateHandle] ♻️ Recomposition → name='$name', count=$count, " +
-               "choice=$choice, vmHash=#${vm.hashCode()}")
+    Log.d(TAG, "[SavedStateHandle] Recomposition: name='$name', count=$count, " +
+               "choice=$choice, instance=#${vm.hashCode()}")
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        "🔴 SavedStateHandle",
+                        "SavedStateHandle",
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp
                     )
@@ -77,8 +77,7 @@ fun SavedStateScreen(vm: SavedStateViewModel = viewModel()) {
 
             MechanismBadge(
                 label = "Cơ chế: SavedStateHandle",
-                description = "ViewModel + tự động backup vào Bundle của OS. Survive cả kill process! " +
-                              "Mất chỉ khi navigate Back (NavBackStackEntry bị pop).",
+                description = "Dữ liệu trong ViewModel được lưu thêm bằng SavedStateHandle.",
                 color = Color(0xFFC62828)
             )
 
@@ -88,15 +87,9 @@ fun SavedStateScreen(vm: SavedStateViewModel = viewModel()) {
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFFCE4EC)),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Row(
-                    modifier = Modifier.padding(14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text("🔑", fontSize = 20.sp)
-                    Column {
+                Column(modifier = Modifier.padding(14.dp)) {
                         Text(
-                            "ViewModel Instance ID",
+                            "Mã ViewModel",
                             fontSize = 12.sp,
                             color = Color(0xFF880E4F),
                             fontWeight = FontWeight.SemiBold
@@ -109,15 +102,14 @@ fun SavedStateScreen(vm: SavedStateViewModel = viewModel()) {
                             fontFamily = FontFamily.Monospace
                         )
                         Text(
-                            "⭐ Sau kill process: ID THAY ĐỔI nhưng data VẪN CÒN!",
+                            "So sánh mã và dữ liệu sau khi process được tạo lại",
                             fontSize = 11.sp,
                             color = Color(0xFFC62828)
                         )
-                    }
                 }
             }
 
-            StateCard(title = "📝 Ô nhập tên / ghi chú") {
+            StateCard(title = "Tên hoặc ghi chú") {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { vm.updateName(it) },
@@ -131,7 +123,7 @@ fun SavedStateScreen(vm: SavedStateViewModel = viewModel()) {
                 )
             }
 
-            StateCard(title = "🔢 Bộ đếm số lần bấm") {
+            StateCard(title = "Bộ đếm") {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -140,7 +132,7 @@ fun SavedStateScreen(vm: SavedStateViewModel = viewModel()) {
                         onClick = { vm.incrementCount() },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828)),
                         shape = RoundedCornerShape(10.dp)
-                    ) { Text("＋ Bấm +1", fontSize = 16.sp) }
+                    ) { Text("+1", fontSize = 16.sp) }
 
                     Button(
                         onClick = { vm.resetCount() },
@@ -157,7 +149,7 @@ fun SavedStateScreen(vm: SavedStateViewModel = viewModel()) {
                 }
             }
 
-            StateCard(title = "🔘 Lựa chọn On/Off") {
+            StateCard(title = "Lựa chọn") {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -171,7 +163,7 @@ fun SavedStateScreen(vm: SavedStateViewModel = viewModel()) {
                         )
                     )
                     Text(
-                        text = if (choice) "BẬT ✅" else "TẮT ❌",
+                        text = if (choice) "Bật" else "Tắt",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = if (choice) Color(0xFFC62828) else Color(0xFF9E9E9E)
@@ -188,9 +180,8 @@ fun SavedStateScreen(vm: SavedStateViewModel = viewModel()) {
             )
 
             InfoNote(
-                text = "⭐ ĐIỂM QUAN TRỌNG: Kill process (adb shell am kill ...) → " +
-                       "VM Hash THAY ĐỔI nhưng data VẪN CÒN!\n" +
-                       "Xem Logcat: 'Restored values → name=...' để chứng minh."
+                text = "Sau khi kill process, so sánh mã ViewModel và kiểm tra dòng " +
+                       "'Restored values' trong Logcat."
             )
         }
     }

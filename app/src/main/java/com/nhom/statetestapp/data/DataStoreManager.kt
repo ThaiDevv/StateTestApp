@@ -52,39 +52,39 @@ class DataStoreManager(private val dataStore: DataStore<Preferences>) {
     val nameFlow: Flow<String> = dataStore.data
         .catch { e ->
             if (e is IOException) {
-                Log.e(TAG, "[DataStore] ❌ Error reading nameFlow", e)
+                Log.e(TAG, "[DataStore] Error reading name", e)
                 emit(emptyPreferences())
             } else throw e
         }
         .map { preferences ->
             val value = preferences[NAME_KEY] ?: ""
-            Log.d(TAG, "[DataStore] 📖 Read name='$value' from disk")
+            Log.d(TAG, "[DataStore] Read name='$value' from disk")
             value
         }
 
     val countFlow: Flow<Int> = dataStore.data
         .catch { e ->
             if (e is IOException) {
-                Log.e(TAG, "[DataStore] ❌ Error reading countFlow", e)
+                Log.e(TAG, "[DataStore] Error reading count", e)
                 emit(emptyPreferences())
             } else throw e
         }
         .map { preferences ->
             val value = preferences[COUNT_KEY] ?: 0
-            Log.d(TAG, "[DataStore] 📖 Read count=$value from disk")
+            Log.d(TAG, "[DataStore] Read count=$value from disk")
             value
         }
 
     val choiceFlow: Flow<Boolean> = dataStore.data
         .catch { e ->
             if (e is IOException) {
-                Log.e(TAG, "[DataStore] ❌ Error reading choiceFlow", e)
+                Log.e(TAG, "[DataStore] Error reading choice", e)
                 emit(emptyPreferences())
             } else throw e
         }
         .map { preferences ->
             val value = preferences[CHOICE_KEY] ?: false
-            Log.d(TAG, "[DataStore] 📖 Read choice=$value from disk")
+            Log.d(TAG, "[DataStore] Read choice=$value from disk")
             value
         }
 
@@ -96,20 +96,20 @@ class DataStoreManager(private val dataStore: DataStore<Preferences>) {
         dataStore.edit { preferences ->
             preferences[NAME_KEY] = name
         }
-        Log.d(TAG, "[DataStore] 💾 Saved name='$name' to disk")
+        Log.d(TAG, "[DataStore] Saved name='$name' to disk")
     }
 
     suspend fun saveCount(count: Int) {
         dataStore.edit { preferences ->
             preferences[COUNT_KEY] = count
         }
-        Log.d(TAG, "[DataStore] 💾 Saved count=$count to disk")
+        Log.d(TAG, "[DataStore] Saved count=$count to disk")
     }
 
     suspend fun saveChoice(choice: Boolean) {
         dataStore.edit { preferences ->
             preferences[CHOICE_KEY] = choice
         }
-        Log.d(TAG, "[DataStore] 💾 Saved choice=$choice to disk")
+        Log.d(TAG, "[DataStore] Saved choice=$choice to disk")
     }
 }

@@ -34,24 +34,18 @@ fun HomeScreen(navController: NavController) {
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
-        // Header
         Text(
-            text = "🔍",
-            fontSize = 56.sp
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "State Android\ntồn tại được bao lâu?",
-            fontSize = 26.sp,
+            text = "Kiểm thử State trong Android",
+            fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             lineHeight = 34.sp
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Chọn cơ chế muốn kiểm thử",
+            text = "Chọn một cơ chế để bắt đầu",
             fontSize = 14.sp,
             color = Color(0xFF6B7280)
         )
@@ -60,41 +54,36 @@ fun HomeScreen(navController: NavController) {
 
         // 5 nút điều hướng
         MechanismButton(
-            emoji = "🔵",
             title = "remember",
-            subtitle = "TV1 phụ trách • Tồn tại trong Composition",
+            subtitle = "TV1 - Lưu trong Composition",
             color = Color(0xFF2196F3),
             onClick = { navController.navigate("remember") }
         )
 
         MechanismButton(
-            emoji = "🟢",
             title = "rememberSaveable",
-            subtitle = "TV2 phụ trách • Survive configuration change",
+            subtitle = "TV2 - Lưu và khôi phục bằng Bundle",
             color = Color(0xFF4CAF50),
             onClick = { navController.navigate("rememberSaveable") }
         )
 
         MechanismButton(
-            emoji = "🟠",
             title = "ViewModel",
-            subtitle = "TV3 phụ trách • Survive xoay màn hình",
+            subtitle = "TV3 - Lưu trong ViewModel",
             color = Color(0xFFFF9800),
             onClick = { navController.navigate("viewModel") }
         )
 
         MechanismButton(
-            emoji = "🔴",
             title = "SavedStateHandle",
-            subtitle = "TV4 phụ trách • Survive process death",
+            subtitle = "TV4 - ViewModel kết hợp SavedStateHandle",
             color = Color(0xFFE91E63),
             onClick = { navController.navigate("savedState") }
         )
 
         MechanismButton(
-            emoji = "🟣",
             title = "DataStore",
-            subtitle = "TV5 phụ trách • Persist vĩnh viễn trên disk",
+            subtitle = "TV5 - Lưu dữ liệu trên bộ nhớ trong",
             color = Color(0xFF9C27B0),
             onClick = { navController.navigate("dataStore") }
         )
@@ -108,8 +97,8 @@ fun HomeScreen(navController: NavController) {
             shape = RoundedCornerShape(12.dp)
         ) {
             Text(
-                text = "📋 Mỗi màn hình có: TextField nhập tên • Bộ đếm • Switch lựa chọn\n" +
-                       "Nhập dữ liệu rồi thực hiện các thao tác test để quan sát state.",
+                text = "Mỗi màn hình gồm ô nhập, bộ đếm và công tắc. " +
+                       "Nhập dữ liệu rồi thực hiện từng tình huống kiểm thử.",
                 modifier = Modifier.padding(16.dp),
                 fontSize = 13.sp,
                 color = Color(0xFF6B5900),
@@ -123,7 +112,6 @@ fun HomeScreen(navController: NavController) {
 
 @Composable
 private fun MechanismButton(
-    emoji: String,
     title: String,
     subtitle: String,
     color: Color,
@@ -144,13 +132,11 @@ private fun MechanismButton(
         ) {
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .background(color.copy(alpha = 0.12f), RoundedCornerShape(12.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(emoji, fontSize = 24.sp)
-            }
-            Spacer(modifier = Modifier.width(16.dp))
+                    .width(5.dp)
+                    .height(44.dp)
+                    .background(color, RoundedCornerShape(4.dp))
+            )
+            Spacer(modifier = Modifier.width(14.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
@@ -165,7 +151,7 @@ private fun MechanismButton(
                     lineHeight = 16.sp
                 )
             }
-            Text("›", fontSize = 22.sp, color = Color(0xFFD1D5DB))
+            Text("Mở", fontSize = 12.sp, color = Color(0xFF6B7280))
         }
     }
 }

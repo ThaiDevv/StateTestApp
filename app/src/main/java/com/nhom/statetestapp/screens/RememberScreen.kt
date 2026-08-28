@@ -43,14 +43,14 @@ fun RememberScreen() {
     var choice by remember { mutableStateOf(false) }
 
     // Log mỗi lần Recomposition – bằng chứng state còn hay mất
-    Log.d(TAG, "[remember] ♻️ Recomposition → name='$name', count=$count, choice=$choice")
+    Log.d(TAG, "[remember] Recomposition: name='$name', count=$count, choice=$choice")
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        "🔵 remember",
+                        "remember",
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp
                     )
@@ -76,17 +76,17 @@ fun RememberScreen() {
             // ── Chip nhận dạng cơ chế ──
             MechanismBadge(
                 label = "Cơ chế: remember",
-                description = "Lưu trong Composition (RAM). Không survive bất kỳ lifecycle event nào ngoài recomposition.",
+                description = "Dữ liệu được lưu trong Composition và chỉ còn khi Composition vẫn tồn tại.",
                 color = Color(0xFF1565C0)
             )
 
             // ── TextField nhập tên ──
-            StateCard(title = "📝 Ô nhập tên / ghi chú") {
+            StateCard(title = "Tên hoặc ghi chú") {
                 OutlinedTextField(
                     value = name,
                     onValueChange = {
                         name = it
-                        Log.d(TAG, "[remember] name thay đổi → '$it'")
+                        Log.d(TAG, "[remember] Name changed: '$it'")
                     },
                     label = { Text("Nhập tên hoặc ghi chú") },
                     modifier = Modifier.fillMaxWidth(),
@@ -99,7 +99,7 @@ fun RememberScreen() {
             }
 
             // ── Bộ đếm ──
-            StateCard(title = "🔢 Bộ đếm số lần bấm") {
+            StateCard(title = "Bộ đếm") {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -107,16 +107,16 @@ fun RememberScreen() {
                     Button(
                         onClick = {
                             count++
-                            Log.d(TAG, "[remember] count tăng → $count")
+                            Log.d(TAG, "[remember] Count changed: $count")
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1565C0)),
                         shape = RoundedCornerShape(10.dp)
-                    ) { Text("＋ Bấm +1", fontSize = 16.sp) }
+                    ) { Text("+1", fontSize = 16.sp) }
 
                     Button(
                         onClick = {
                             count = 0
-                            Log.d(TAG, "[remember] count reset → 0")
+                            Log.d(TAG, "[remember] Count reset: 0")
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF78909C)),
                         shape = RoundedCornerShape(10.dp)
@@ -132,7 +132,7 @@ fun RememberScreen() {
             }
 
             // ── Switch lựa chọn ──
-            StateCard(title = "🔘 Lựa chọn On/Off") {
+            StateCard(title = "Lựa chọn") {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -141,7 +141,7 @@ fun RememberScreen() {
                         checked = choice,
                         onCheckedChange = {
                             choice = it
-                            Log.d(TAG, "[remember] choice → $it")
+                            Log.d(TAG, "[remember] Choice changed: $it")
                         },
                         colors = SwitchDefaults.colors(
                             checkedThumbColor  = Color.White,
@@ -149,7 +149,7 @@ fun RememberScreen() {
                         )
                     )
                     Text(
-                        text = if (choice) "BẬT ✅" else "TẮT ❌",
+                        text = if (choice) "Bật" else "Tắt",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = if (choice) Color(0xFF1565C0) else Color(0xFF9E9E9E)
@@ -168,8 +168,8 @@ fun RememberScreen() {
 
             // ── Ghi chú ──
             InfoNote(
-                text = "⚠️ Thử xoay màn hình (Ctrl+F11) hoặc bấm Back rồi vào lại → State sẽ MẤT. " +
-                       "Thử nhập thêm ký tự → Recomposition nhưng state vẫn CÒN."
+                text = "Xoay màn hình hoặc bấm Back rồi vào lại để kiểm tra state. " +
+                       "Nhập thêm một ký tự để tạo recomposition."
             )
         }
     }

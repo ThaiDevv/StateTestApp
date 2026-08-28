@@ -39,14 +39,14 @@ fun RememberSaveableScreen() {
     var count  by rememberSaveable { mutableIntStateOf(0) }
     var choice by rememberSaveable { mutableStateOf(false) }
 
-    Log.d(TAG, "[rememberSaveable] ♻️ Recomposition → name='$name', count=$count, choice=$choice")
+    Log.d(TAG, "[rememberSaveable] Recomposition: name='$name', count=$count, choice=$choice")
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        "🟢 rememberSaveable",
+                        "rememberSaveable",
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp
                     )
@@ -70,17 +70,16 @@ fun RememberSaveableScreen() {
 
             MechanismBadge(
                 label = "Cơ chế: rememberSaveable",
-                description = "Lưu trong Composition + backup vào Bundle (onSaveInstanceState). " +
-                              "Survive xoay màn hình & kill process. Mất khi navigate Back.",
+                description = "Dữ liệu trong Composition được lưu thêm vào Bundle của Activity.",
                 color = Color(0xFF2E7D32)
             )
 
-            StateCard(title = "📝 Ô nhập tên / ghi chú") {
+            StateCard(title = "Tên hoặc ghi chú") {
                 OutlinedTextField(
                     value = name,
                     onValueChange = {
                         name = it
-                        Log.d(TAG, "[rememberSaveable] name thay đổi → '$it'")
+                        Log.d(TAG, "[rememberSaveable] Name changed: '$it'")
                     },
                     label = { Text("Nhập tên hoặc ghi chú") },
                     modifier = Modifier.fillMaxWidth(),
@@ -92,7 +91,7 @@ fun RememberSaveableScreen() {
                 )
             }
 
-            StateCard(title = "🔢 Bộ đếm số lần bấm") {
+            StateCard(title = "Bộ đếm") {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -100,16 +99,16 @@ fun RememberSaveableScreen() {
                     Button(
                         onClick = {
                             count++
-                            Log.d(TAG, "[rememberSaveable] count tăng → $count")
+                            Log.d(TAG, "[rememberSaveable] Count changed: $count")
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
                         shape = RoundedCornerShape(10.dp)
-                    ) { Text("＋ Bấm +1", fontSize = 16.sp) }
+                    ) { Text("+1", fontSize = 16.sp) }
 
                     Button(
                         onClick = {
                             count = 0
-                            Log.d(TAG, "[rememberSaveable] count reset → 0")
+                            Log.d(TAG, "[rememberSaveable] Count reset: 0")
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF78909C)),
                         shape = RoundedCornerShape(10.dp)
@@ -124,7 +123,7 @@ fun RememberSaveableScreen() {
                 }
             }
 
-            StateCard(title = "🔘 Lựa chọn On/Off") {
+            StateCard(title = "Lựa chọn") {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -133,7 +132,7 @@ fun RememberSaveableScreen() {
                         checked = choice,
                         onCheckedChange = {
                             choice = it
-                            Log.d(TAG, "[rememberSaveable] choice → $it")
+                            Log.d(TAG, "[rememberSaveable] Choice changed: $it")
                         },
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = Color.White,
@@ -141,7 +140,7 @@ fun RememberSaveableScreen() {
                         )
                     )
                     Text(
-                        text = if (choice) "BẬT ✅" else "TẮT ❌",
+                        text = if (choice) "Bật" else "Tắt",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = if (choice) Color(0xFF2E7D32) else Color(0xFF9E9E9E)
@@ -158,8 +157,8 @@ fun RememberSaveableScreen() {
             )
 
             InfoNote(
-                text = "✅ Thử xoay màn hình (Ctrl+F11) → State VẪN CÒN (khác remember!).\n" +
-                       "❌ Thử bấm Back rồi vào lại → State MẤT (NavBackStackEntry bị pop)."
+                text = "Xoay màn hình để kiểm tra khả năng khôi phục từ Bundle. " +
+                       "Bấm Back rồi vào lại để kiểm tra vòng đời của NavBackStackEntry."
             )
         }
     }
