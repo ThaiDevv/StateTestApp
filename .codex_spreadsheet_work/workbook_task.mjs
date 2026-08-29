@@ -8,6 +8,289 @@ const outputDir = "D:/Ltrinh TBDD/StateTestApp/outputs/01a0397b-ae26-7f12-a82e-0
 const outputPath = path.join(outputDir, "Testcase_State_FINAL.xlsx");
 const renderDir = path.join(outputDir, "verification_renders");
 
+if (process.argv.includes("--inspect-current")) {
+  const current = await SpreadsheetFile.importXlsx(await FileBlob.load(outputPath));
+  await fs.mkdir(renderDir, { recursive: true });
+  const info = await current.inspect({
+    kind: "sheet,drawing,table",
+    maxChars: 30000,
+    tableMaxRows: 12,
+    tableMaxCols: 8,
+  });
+  await fs.writeFile(path.join(outputDir, "current_before_edit.ndjson"), info.ndjson, "utf8");
+  for (const tcName of ["TC09", "TC14", "TC19", "TC24"]) {
+    const preview = await current.render({
+      sheetName: tcName,
+      range: "A1:AF55",
+      scale: 0.25,
+      format: "png",
+    });
+    await fs.writeFile(path.join(renderDir, `before_${tcName}.png`), new Uint8Array(await preview.arrayBuffer()));
+  }
+  console.log(info.ndjson);
+  process.exit(0);
+}
+
+if (process.argv.includes("--update-completed")) {
+  const current = await SpreadsheetFile.importXlsx(await FileBlob.load(outputPath));
+  const summarySheet = current.worksheets.getItem("Test Cases");
+  const completed = [
+    {
+      id: 9,
+      row: 13,
+      result: "Kết quả: CÒN - tên Test State, count=3, switch Bật; Activity được tạo lại với isRestored=true.\nNguyên nhân: rememberSaveable đăng ký state với SavedStateRegistry. onSaveInstanceState lưu các giá trị vào Bundle trước khi Activity bị hủy và Composition mới đọc lại Bundle khi Activity được tạo lại.",
+    },
+    {
+      id: 14,
+      row: 20,
+      result: "Kết quả: MẤT - tên trống, count=0, switch Tắt; ViewModel cũ #185322183 được cleared và ViewModel mới #105839229 được tạo.\nNguyên nhân: Don't keep activities hủy Activity khi ứng dụng xuống nền với isChangingConfigurations=false, nên ViewModelStore bị xóa. ViewModel thuần chỉ giữ dữ liệu trong RAM và không tự phục hồi từ savedInstanceState.",
+    },
+    {
+      id: 19,
+      row: 27,
+      result: "Kết quả: CÒN - Test State, 3, Bật; ViewModel cũ #1906321 được cleared và ViewModel mới #252658283 nhận lại dữ liệu.\nNguyên nhân: SavedStateHandle ghi state vào SavedInstanceState Bundle. Khi Activity được tạo lại với isRestored=true, ViewModel mới đọc Restored values từ Bundle nên UI được phục hồi.",
+    },
+    {
+      id: 24,
+      row: 34,
+      result: "Kết quả: CÒN - Test State, 3, Bật sau khi Activity bị hủy và tạo lại.\nNguyên nhân: Preferences DataStore đã ghi dữ liệu vào file trên Internal Storage. Activity mới thu thập lại Flow, đọc name/count/choice từ disk và cập nhật UI; việc hủy Activity chỉ xóa state trong RAM.",
+    },
+  ];
+
+  for (const item of completed) {
+    const tcName = `TC${String(item.id).padStart(2, "0")}`;
+    const evidenceSheet = current.worksheets.getItem(tcName);
+    evidenceSheet.unmergeCells("B3:H7");
+    evidenceSheet.getRange("B3:H7").clear({ applyTo: "all" });
+    summarySheet.getRange(`E${item.row}`).values = [[item.result]];
+    summarySheet.getRange(`F${item.row}`).formulas = [[
+      `=HYPERLINK("#'${tcName}'!A1","Xem ảnh tại sheet ${tcName}")`,
+    ]];
+    summarySheet.getRange(`G${item.row}`).values = [["Pass"]];
+    summarySheet.getRange(`F${item.row}`).format = {
+      font: { color: "#1D4ED8", bold: false, size: 10 },
+      horizontalAlignment: "center",
+      verticalAlignment: "center",
+      wrapText: true,
+      fill: "#EFF6FF",
+      borders: { preset: "all", style: "thin", color: "#D9E2F3" },
+    };
+    summarySheet.getRange(`G${item.row}`).format = {
+      font: { color: "#16A34A", bold: true, size: 10 },
+      horizontalAlignment: "center",
+      verticalAlignment: "center",
+      wrapText: true,
+      fill: "#F0FDF4",
+      borders: { preset: "all", style: "thin", color: "#D9E2F3" },
+    };
+  }
+
+  summarySheet.getRange("A37:G37").unmerge();
+  summarySheet.getRange("A37:G37").clear({ applyTo: "all" });
+  summarySheet.getRange("A37:G37").merge();
+  summarySheet.getRange("A37:G37").values = [[
+    "TỔNG KẾT: 25 test case; đã có đủ 25 ảnh minh chứng; 25/25 test case đã thực hiện và đạt.",
+  ]];
+  summarySheet.getRange("A37:G37").format = {
+    fill: "#DCFCE7",
+    font: { bold: true, color: "#166534", size: 10 },
+    wrapText: true,
+    verticalAlignment: "center",
+    borders: { preset: "outside", style: "medium", color: "#16A34A" },
+  };
+  summarySheet.getRange("A37:G37").format.rowHeight = 34;
+
+  const tempPath = path.join(outputDir, ".Testcase_State_FINAL.tmp.xlsx");
+  const exported = await SpreadsheetFile.exportXlsx(current);
+  await exported.save(tempPath);
+
+  const zip = await JSZip.loadAsync(await fs.readFile(tempPath));
+  let normalizedHyperlinks = 0;
+  for (const fileName of Object.keys(zip.files).filter((name) => /^xl\/worksheets\/sheet\d+\.xml$/.test(name))) {
+    const entry = zip.file(fileName);
+    if (!entry) continue;
+    let xml = await entry.async("string");
+    xml = xml.replace(
+      /<x:c([^>]*?) t="e"([^>]*)><x:f>(HYPERLINK\("[^"]*","([^"]*)"\))<\/x:f><x:v>[^<]*<\/x:v><\/x:c>/g,
+      (_match, beforeType, afterType, formula, friendlyName) => {
+        normalizedHyperlinks += 1;
+        return `<x:c${beforeType} t="str"${afterType}><x:f>${formula}</x:f><x:v>${friendlyName}</x:v></x:c>`;
+      },
+    );
+    zip.file(fileName, xml);
+  }
+  const workbookXmlEntry = zip.file("xl/workbook.xml");
+  if (!workbookXmlEntry) throw new Error("Missing xl/workbook.xml");
+  let workbookXml = await workbookXmlEntry.async("string");
+  if (workbookXml.includes("<x:calcPr")) {
+    workbookXml = workbookXml.replace(/<x:calcPr[^>]*\/>/, '<x:calcPr calcId="191029" calcMode="auto" fullCalcOnLoad="1" forceFullCalc="1"/>');
+  } else {
+    workbookXml = workbookXml.replace(
+      "</x:workbook>",
+      '<x:calcPr calcId="191029" calcMode="auto" fullCalcOnLoad="1" forceFullCalc="1"/></x:workbook>',
+    );
+  }
+  zip.file("xl/workbook.xml", workbookXml);
+  await fs.writeFile(tempPath, await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" }));
+  await fs.rename(tempPath, outputPath);
+
+  const checkBook = await SpreadsheetFile.importXlsx(await FileBlob.load(outputPath));
+  const keyRange = await checkBook.inspect({
+    kind: "table",
+    sheetId: "Test Cases",
+    range: "A1:G38",
+    include: "values,formulas",
+    tableMaxRows: 45,
+    tableMaxCols: 7,
+    tableMaxCellChars: 260,
+    maxChars: 32000,
+  });
+  await fs.writeFile(path.join(outputDir, "verification_values.ndjson"), keyRange.ndjson, "utf8");
+  const formulaErrors = await checkBook.inspect({
+    kind: "match",
+    searchTerm: "#REF!|#DIV/0!|#VALUE!|#NAME\\?|#N/A",
+    options: { useRegex: true, maxResults: 300 },
+    summary: "final formula error scan",
+  });
+  await fs.writeFile(path.join(outputDir, "verification_errors.ndjson"), formulaErrors.ndjson, "utf8");
+  const drawings = await checkBook.inspect({ kind: "drawing", maxChars: 30000 });
+  await fs.writeFile(path.join(outputDir, "verification_drawings.ndjson"), drawings.ndjson, "utf8");
+  const summaryPreview = await checkBook.render({
+    sheetName: "Test Cases",
+    range: "A1:G38",
+    scale: 0.65,
+    format: "png",
+  });
+  await fs.writeFile(path.join(renderDir, "Test_Cases.png"), new Uint8Array(await summaryPreview.arrayBuffer()));
+  for (const tcName of ["TC09", "TC14", "TC19", "TC24"]) {
+    const preview = await checkBook.render({
+      sheetName: tcName,
+      range: "A1:AF55",
+      scale: 0.25,
+      format: "png",
+    });
+    await fs.writeFile(path.join(renderDir, `${tcName}.png`), new Uint8Array(await preview.arrayBuffer()));
+  }
+  console.log(JSON.stringify({ outputPath, updated: completed.map((item) => item.id), normalizedHyperlinks }));
+  process.exit(0);
+}
+
+if (process.argv.includes("--replace-datastore-evidence")) {
+  const screenshotMap = new Map([
+    ["TC21", "C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-e43e1b73-8ece-4812-acc7-816d127c61e9.png"],
+    ["TC22", "C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-91d64ab5-fcf6-448e-900e-899b644d9566.png"],
+    ["TC23", "C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-75b0b1c5-c59b-44b3-8fe1-f0d75c269157.png"],
+    ["TC25", "C:/Users/LENOVO/AppData/Local/Temp/codex-clipboard-4060e9e9-220a-45c2-91d7-fbf3c443909e.png"],
+  ]);
+  const current = await SpreadsheetFile.importXlsx(await FileBlob.load(outputPath));
+  const summarySheet = current.worksheets.getItem("Test Cases");
+
+  for (const [tcName, screenshotPath] of screenshotMap) {
+    const bytes = await fs.readFile(screenshotPath);
+    if (bytes.toString("ascii", 1, 4) !== "PNG") throw new Error(`${screenshotPath} is not PNG`);
+    const widthPx = bytes.readUInt32BE(16);
+    const heightPx = bytes.readUInt32BE(20);
+    const sheet = current.worksheets.getItem(tcName);
+    sheet.deleteAllDrawings();
+    sheet.images.add({
+      dataUrl: `data:image/png;base64,${bytes.toString("base64")}`,
+      anchor: {
+        from: { row: 0, col: 1 },
+        extent: { widthPx, heightPx },
+      },
+    });
+  }
+
+  const updatedResults = new Map([
+    [31, "Kết quả: CÒN - Test State!, 3, Bật sau recomposition; Logcat có Saved/Read và Recomposition với name='Test State!', count=3, choice=true.\nNguyên nhân: DataStore ghi các thay đổi vào file Preferences và Flow phát giá trị mới cho UI; recomposition không xóa dữ liệu trên bộ nhớ trong."],
+    [32, "Kết quả: CÒN - Test State!, 3, Bật sau khi xoay màn hình; Activity được tạo lại với isRestored=true và DataStore đọc lại đủ name/count/choice từ disk.\nNguyên nhân: Configuration Change chỉ tạo lại Activity/Composition; file DataStore vẫn tồn tại và Flow của màn hình mới tiếp tục đọc dữ liệu đã lưu."],
+    [33, "Kết quả: CÒN - Test State!, 3, Bật sau khi Back về Home rồi mở lại DataStore; màn hình mới khởi tạo state mặc định trước khi đọc lại dữ liệu từ disk.\nNguyên nhân: Back loại màn hình khỏi NavBackStack nhưng không xóa file DataStore; lần điều hướng mới thu thập Flow và nhận lại các giá trị đã lưu."],
+    [35, "Kết quả: CÒN - Test State!, 3, Bật sau khi kill process; Activity mới có isRestored=true và Logcat đọc lại name/count/choice từ disk.\nNguyên nhân: kill process xóa RAM nhưng không xóa file Preferences DataStore trong Internal Storage; tiến trình mới đọc lại file và phục hồi UI."],
+  ]);
+  for (const [row, result] of updatedResults) summarySheet.getRange(`E${row}`).values = [[result]];
+
+  summarySheet.getRange("A38:G38").unmerge();
+  summarySheet.getRange("A38:G38").clear({ applyTo: "all" });
+
+  const tempPath = path.join(outputDir, ".Testcase_State_FINAL.tmp.xlsx");
+  const exported = await SpreadsheetFile.exportXlsx(current);
+  await exported.save(tempPath);
+
+  const zip = await JSZip.loadAsync(await fs.readFile(tempPath));
+  let normalizedHyperlinks = 0;
+  for (const fileName of Object.keys(zip.files).filter((name) => /^xl\/worksheets\/sheet\d+\.xml$/.test(name))) {
+    const entry = zip.file(fileName);
+    if (!entry) continue;
+    let xml = await entry.async("string");
+    xml = xml.replace(
+      /<x:c([^>]*?) t="e"([^>]*)><x:f>(HYPERLINK\("[^"]*","([^"]*)"\))<\/x:f><x:v>[^<]*<\/x:v><\/x:c>/g,
+      (_match, beforeType, afterType, formula, friendlyName) => {
+        normalizedHyperlinks += 1;
+        return `<x:c${beforeType} t="str"${afterType}><x:f>${formula}</x:f><x:v>${friendlyName}</x:v></x:c>`;
+      },
+    );
+    zip.file(fileName, xml);
+  }
+  const workbookXmlEntry = zip.file("xl/workbook.xml");
+  if (!workbookXmlEntry) throw new Error("Missing xl/workbook.xml");
+  let workbookXml = await workbookXmlEntry.async("string");
+  if (workbookXml.includes("<x:calcPr")) {
+    workbookXml = workbookXml.replace(/<x:calcPr[^>]*\/>/, '<x:calcPr calcId="191029" calcMode="auto" fullCalcOnLoad="1" forceFullCalc="1"/>');
+  } else {
+    workbookXml = workbookXml.replace(
+      "</x:workbook>",
+      '<x:calcPr calcId="191029" calcMode="auto" fullCalcOnLoad="1" forceFullCalc="1"/></x:workbook>',
+    );
+  }
+  zip.file("xl/workbook.xml", workbookXml);
+  await fs.writeFile(tempPath, await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" }));
+  await fs.rename(tempPath, outputPath);
+
+  const checkBook = await SpreadsheetFile.importXlsx(await FileBlob.load(outputPath));
+  const keyRange = await checkBook.inspect({
+    kind: "table",
+    sheetId: "Test Cases",
+    range: "A29:G38",
+    include: "values,formulas",
+    tableMaxRows: 12,
+    tableMaxCols: 7,
+    tableMaxCellChars: 280,
+    maxChars: 15000,
+  });
+  await fs.writeFile(path.join(outputDir, "verification_values.ndjson"), keyRange.ndjson, "utf8");
+  const formulaErrors = await checkBook.inspect({
+    kind: "match",
+    searchTerm: "#REF!|#DIV/0!|#VALUE!|#NAME\\?|#N/A",
+    options: { useRegex: true, maxResults: 300 },
+    summary: "final formula error scan",
+  });
+  await fs.writeFile(path.join(outputDir, "verification_errors.ndjson"), formulaErrors.ndjson, "utf8");
+  const drawings = await checkBook.inspect({ kind: "drawing", maxChars: 30000 });
+  await fs.writeFile(path.join(outputDir, "verification_drawings.ndjson"), drawings.ndjson, "utf8");
+  const summaryPreview = await checkBook.render({
+    sheetName: "Test Cases",
+    range: "A29:G37",
+    scale: 0.9,
+    format: "png",
+  });
+  await fs.writeFile(path.join(renderDir, "Test_Cases_DataStore.png"), new Uint8Array(await summaryPreview.arrayBuffer()));
+  for (const tcName of screenshotMap.keys()) {
+    const preview = await checkBook.render({
+      sheetName: tcName,
+      range: "A1:AF55",
+      scale: 0.25,
+      format: "png",
+    });
+    await fs.writeFile(path.join(renderDir, `${tcName}.png`), new Uint8Array(await preview.arrayBuffer()));
+  }
+  console.log(JSON.stringify({
+    outputPath,
+    replacedEvidence: [...screenshotMap.keys()],
+    normalizedHyperlinks,
+  }));
+  process.exit(0);
+}
+
 const workbook = await SpreadsheetFile.importXlsx(await FileBlob.load(sourcePath));
 if (process.argv.includes("--help-hyperlink")) {
   console.log(workbook.help("hyperlink", { include: "index,examples,notes", maxChars: 12000 }).ndjson);
