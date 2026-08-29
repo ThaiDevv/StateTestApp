@@ -50,3 +50,7 @@ app/debug/
 # Test results
 app/src/test/
 app/src/androidTest/
+
+# Codex spreadsheet work - không push output của codex
+.codex_spreadsheet_work/
+outputs/
